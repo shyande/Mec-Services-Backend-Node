@@ -4,7 +4,7 @@ module.exports = {
   port:'5434',
   username:'postgres',
   password:'docker',
-  database:'projeto5',
+  database:'projetoIntegrado',
   define:{
     timestamps:true,
     underscored:true,

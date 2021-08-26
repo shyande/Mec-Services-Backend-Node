@@ -7,8 +7,9 @@ class Disponibilidade extends Model{
   static init(sequelize){
     super.init({
       date: Sequelize.DATE,
-      hour: Sequelize.NUMBER,
-      status_disponibilidade:{
+      status_disponibilidade: Sequelize.STRING,
+      display_date: Sequelize.STRING,
+      past:{
         type: Sequelize.VIRTUAL,
         get(){
           return isBefore(this.date, new Date());

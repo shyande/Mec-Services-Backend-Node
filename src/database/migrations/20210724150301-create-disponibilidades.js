@@ -16,8 +16,11 @@ module.exports = {
         allowNull: false,
         unique: true
       },
-      hour:{
-        type:Sequelize.INTEGER,
+      status_disponibilidade:{
+        type:Sequelize.STRING,
+      },
+      display_date:{
+        type:Sequelize.STRING,
         allowNull: false,
       },
       created_at:{

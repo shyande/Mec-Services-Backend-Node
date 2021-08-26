@@ -37,7 +37,6 @@ class AgendamentoController{
   }
   
   async store(req,res){
-
     const schema = Yup.object().shape({
       user:Yup.string().required(),
       veiculo:Yup.string().required(),
@@ -105,6 +104,8 @@ class AgendamentoController{
       return res.status(401).json({error:'Disponibilidade já utilizada'});
     }
 
+    const dateHour =  format(checkDisponibilidade.date, "dd-MM-yyyy' às 'HH:00")
+
     const agendamento = await Agendamento.create({
       user,
       veiculo,
@@ -115,8 +116,12 @@ class AgendamentoController{
       status_agendamento: true,
     });
 
+    checkDisponibilidade.status_disponibilidade = 1;
+
+    await checkDisponibilidade.save();
+
     const {id} = agendamento;
-    const dateHour =  format(checkDisponibilidade.date, "dd-MM-yyyy' às 'HH:00")
+
     /**Salvando dados brutos para exibir para o usuario no frontend */
     const infoAgendamentoDados = await InfoAgendamento.create({
       email:checkUser.email,
@@ -149,20 +154,27 @@ class AgendamentoController{
     }
 
     if(!infoAgendamentoDados){
-      return res.json({error:'agendamento já foi cancelado'})
+      return res.status(401).json({error:'agendamento já foi cancelado'})
     }
 
     const dateSub = subHours(infoAgendamentoDados.dateCalc, 2);
     
     if(isBefore(dateSub, new Date())){
-      return res.status(401).json({error:'Você não pode cancelar, pois já passou do prazo!'});
+      return res.status(401).json({error:'Você não pode cancelar, pois já passou do prazo ou é um agendamento antigo!'});
     }
+
+    const checkDisponibilidade = await Disponibilidade.findOne({
+      where:{id:agendamento.disponibilidade}
+    });
 
     infoAgendamentoDados.delete();
 
     agendamento.canceled_at = new Date();
     agendamento.disponibilidade = null;
     agendamento.status_agendamento = false;
+
+    checkDisponibilidade.status_disponibilidade = null;
+    await checkDisponibilidade.save();
    
     await agendamento.save();
 

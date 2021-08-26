@@ -38,7 +38,7 @@ class ServicoController{
     });
 
     if(servicoExists){
-      return res.json({error:'Serviço já cadastrado'});
+      return res.status(401).json({error:'Serviço já cadastrado'});
     }
 
     const {id} = await Servico.create(req.body);
@@ -53,7 +53,6 @@ class ServicoController{
   async update(req,res){
     
     const schema = Yup.object().shape({
-      id:Yup.number().required(),
       tipo_servico:Yup.string().required(),
       tempo_estimado:Yup.string().required(),
     });
@@ -68,14 +67,14 @@ class ServicoController{
       return res.status(401).json({error:'Cadastro pode ser efetuado apenas pela empresa'});
     }
      
-    const {id} = req.body;
+    const {id} = req.params;
 
     const servicoExists = await Servico.findOne({
       where:{id}
     });
 
     if(!servicoExists){
-      return res.json({error:'Serviço não existe'});
+      return res.status(401).json({error:'Serviço não existe'});
     }
 
     const {tempo_estimado,tipo_servico} = await servicoExists.update(req.body);

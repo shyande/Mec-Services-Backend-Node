@@ -2,6 +2,21 @@ const Empresa = require('../models/Empresa');
 const Yup = require('yup');
 
 class EmpresaController{
+  async show(req,res){
+    const empresaExists = await Empresa.findOne({
+      where:{id: req.userId}
+    });
+
+    const {email,name,telefone,cnpj,endereco} = empresaExists
+
+    return res.json({
+      email,
+      name,
+      endereco,
+      telefone,
+      cnpj
+    })
+  }
   async store(req,res){
 
     const schema = Yup.object().shape({
@@ -14,7 +29,7 @@ class EmpresaController{
     });
 
     if(!(await schema.isValid(req.body))){
-      return res.json({error:'Erro na validação dos dados'});
+      return res.status(401).json({error:'Erro na validação dos dados'});
     }
 
     const empresaExists = await Empresa.findOne({
@@ -22,7 +37,7 @@ class EmpresaController{
     });
 
     if(empresaExists){
-      return res.json({error:'Empresa já existe'});
+      return res.status(401).json({error:'Empresa já existe'});
     }
 
     const {name,email,telefone,endereco} = await Empresa.create(req.body);
@@ -44,14 +59,12 @@ class EmpresaController{
       cnpj:Yup.string().required(),
       telefone:Yup.string().required(),
       oldpassword:Yup.string().required(),
-      password:Yup.string().required().min(6).when('oldpassword',(oldpassword,field) =>
-        oldpassword ? field.required() : field
-      ),
+      password:Yup.string().min(6),
       confirmPassword:Yup.string().when('password',(password,field) => 
         password ? field.required().oneOf([Yup.ref('password')]) : field
       ),
     });
-
+    
     if(!(await schema.isValid(req.body))){
       return res.status(401).json({error:'Falha na validação dos dados'});
     }

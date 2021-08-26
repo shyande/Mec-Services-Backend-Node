@@ -28,7 +28,7 @@ class SessionEmpresaController{
     }
 
    if(!(await empresa.checkPassword(password))){
-     return res.json({error:'Usuário ou senha inválidos'});
+     return res.status(401).json({error:'Usuário ou senha inválidos'});
    }
 
    const {id,name} = empresa;

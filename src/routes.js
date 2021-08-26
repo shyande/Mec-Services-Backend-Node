@@ -21,12 +21,14 @@ routes.use(authMiddleware);
 
 routes.put('/atualizarCadastro', UserController.update);
 routes.put('/atualizarCadastroEmpresa', EmpresaController.update);
+routes.get('/dadosEmpresa', EmpresaController.show);
 
 routes.post('/cadastrarDisponibilidade', DisponibilidadeController.store);
 routes.get('/verificarDisponibilidade', DisponibilidadeController.index);
+routes.get('/disponibilidades', DisponibilidadeController.show);
 
 routes.post('/cadastrarServico', ServicoController.store);
-routes.put('/atualizarServico', ServicoController.update);
+routes.put('/atualizarServico/:id', ServicoController.update);
 routes.get('/pesquisarServicos', ServicoController.show);
 
 routes.post('/cadastrarVeiculo', VeiculoController.store);
