@@ -5,11 +5,10 @@ const databaseConfig = require('../config/database');
 const Agendamento = require('../app/models/Agendamento');
 const Disponibilidade = require('../app/models/Disponibilidade');
 const Empresa = require('../app/models/Empresa');
-const Servico = require('../app/models/Servico');
 const User = require('../app/models/User');
 const Veiculo = require('../app/models/Veiculo');
 
-const models = [Agendamento,Disponibilidade,Empresa,Servico,User,Veiculo];
+const models = [Agendamento,Disponibilidade,Empresa,User,Veiculo];
 
 class Database{
   constructor(){

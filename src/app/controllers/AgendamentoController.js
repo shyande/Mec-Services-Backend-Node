@@ -2,13 +2,28 @@ const Yup = require('yup');
 const Agendamento = require('../models/Agendamento');
 const Empresa = require('../models/Empresa');
 const Veiculo = require('../models/Veiculo');
-const Servico = require('../models/Servico');
 const User = require('../models/User');
 const Disponibilidade = require('../models/Disponibilidade');
 const InfoAgendamento = require('../schemas/infoAgendamento');
 const {subHours,isBefore,format} = require('date-fns');
 
 class AgendamentoController{
+
+  async findCandeled(req,res){
+    const isEmpresa = await Empresa.findByPk(req.userId);
+
+    if(!isEmpresa){
+      return res.status(401).json({error:'Empresa inválida'});
+    }
+
+    const agendamentos = await Agendamento.findAll({
+      where:{status_agendamento:false}
+    });
+
+    return res.json(
+      agendamentos
+    )
+  }
 
   async show(req,res){
 
@@ -70,10 +85,6 @@ class AgendamentoController{
     const checkEmpresa = await Empresa.findOne({
       where:{id:empresa}
     });
-
-    const checkServico = await Servico.findOne({
-      where:{id:servico}
-    });
     
     if(!checkUser){
       return res.status(401).json({error:'identificação do usuario falhou'});
@@ -89,10 +100,6 @@ class AgendamentoController{
 
     if(!checkEmpresa){
       return res.status(401).json({error:'identificação da empresa falhou'});
-    }
-
-    if(!checkServico){
-      return res.status(401).json({error:'identificação do serviço falhou'});
     }
 
     /**Checando disponibilidade*/
@@ -127,13 +134,33 @@ class AgendamentoController{
       email:checkUser.email,
       veiculo: checkCar.placa,
       endereco:checkEmpresa.endereco,
-      servico:checkServico.tipo_servico,
+      servico,
+      telefone:checkUser.telefone,
       disponibilidade:dateHour,
       referenciaId: id,
-      dateCalc:checkDisponibilidade.date
+      dateCalc:checkDisponibilidade.date,
+      status:'Recebido'
     });
 
     return res.json(infoAgendamentoDados);
+
+  }
+
+  async update(req,res){
+
+    const infoAgendamentoDados = await InfoAgendamento.findOne({referenciaId:req.params.id});
+
+    if(!infoAgendamentoDados){
+      return res.status(401).json({error:'Agendamento não existe'});
+    }
+
+    const {status} = req.body;
+
+    infoAgendamentoDados.status = status;
+
+    infoAgendamentoDados.save()
+
+    return res.status(200).json({status:'Atualizado'})
 
   }
 

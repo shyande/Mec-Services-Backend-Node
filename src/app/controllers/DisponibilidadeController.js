@@ -6,6 +6,35 @@ const {startOfHour, parseISO, isBefore, format, subHours} = require('date-fns');
 
 class DisponibilidadeController{
 
+  async findDay(req,res){
+    const isEmpresa = await Empresa.findByPk(req.userId);
+
+    if(!isEmpresa){
+      return res.status(401).json({error:'Empresa inválida'});
+    }
+
+    const disponibilidadeOpen = await Disponibilidade.findAll({
+      where:{
+        status_disponibilidade:'1',
+      },
+      order: ['date'],
+      limit:30,
+      attributes:['id','date','status_disponibilidade','display_date','past']
+    });
+    const nextAgendamento = []
+    for(let x = 0; x < disponibilidadeOpen.length; x++){
+      if(disponibilidadeOpen[x].past === false){
+        nextAgendamento.push(disponibilidadeOpen[x])
+      }
+    }
+  
+    return res.json({
+      nextAgendamento
+    })
+
+  }
+
+
   async show(req,res){
 
     const disponibilidadeOpen = await Disponibilidade.findAll({
@@ -84,6 +113,25 @@ class DisponibilidadeController{
       date,
       display_date,
     })
+  }
+  async delete(req,res){
+
+    const {id} = req.params;
+
+    const disponibilidadeOpen = await Disponibilidade.findAll({
+      where:{id},
+    });
+
+    if(!disponibilidadeOpen){
+      res.status(400).json({error:'Disponibilidade não encontrada ou já retirada'});
+    }
+
+    disponibilidadeOpen.status_disponibilidade = 1;
+
+    disponibilidadeOpen.save();
+
+    return res.status(200).json({message:'Disponibilidade retirada'});
+
   }
 
 }

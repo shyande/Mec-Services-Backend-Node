@@ -9,6 +9,9 @@ const InfoAgendamentoSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  telefone:{
+    type: String,
+  },
   servico: {
     type: String,
     required: true,
@@ -28,6 +31,10 @@ const InfoAgendamentoSchema = new mongoose.Schema({
   referenciaId: {
     type: Number,
     required: true,
+  },
+  status:{
+    type:String,
+    requried:true
   }
 },{
   timestamps: true,

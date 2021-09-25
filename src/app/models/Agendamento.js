@@ -8,6 +8,7 @@ class Agendamento extends Model{
     super.init({
       status_agendamento: Sequelize.BOOLEAN,
       canceled_at:Sequelize.DATE,
+      servico:Sequelize.STRING,
       cancelable:{
         type: Sequelize.VIRTUAL,
         get(){
@@ -25,7 +26,6 @@ class Agendamento extends Model{
     this.belongsTo(models.User, {foreignKey:'user', as: 'user_id'});
     this.belongsTo(models.Empresa, {foreignKey:'empresa', as: 'empresa_id'});
     this.belongsTo(models.Veiculo, {foreignKey:'veiculo', as: 'veiculo_id'});
-    this.belongsTo(models.Servico, {foreignKey:'servico', as: 'servico_id'});
     this.belongsTo(models.Disponibilidade, {foreignKey:'disponibilidade', as: 'disponibilidade_id'});
   }
 }

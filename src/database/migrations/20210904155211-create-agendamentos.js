@@ -15,6 +15,10 @@ module.exports = {
         type:Sequelize.BOOLEAN,
         allowNull:false,
       },
+      servico:{
+        type:Sequelize.STRING,
+        allowNull:false,
+      },
       canceled_at:{
         type:Sequelize.DATE,
       },
@@ -33,12 +37,6 @@ module.exports = {
       empresa:{
         type:Sequelize.INTEGER,
         references:{model:'empresas', key:'id'},
-        onUpdate:'CASCADE',
-        onDELETE:'SET NULL',
-      },
-      servico:{
-        type:Sequelize.INTEGER,
-        references:{model:'servicos', key:'id'},
         onUpdate:'CASCADE',
         onDELETE:'SET NULL',
       },
