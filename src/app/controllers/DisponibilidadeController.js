@@ -27,10 +27,43 @@ class DisponibilidadeController{
         nextAgendamento.push(disponibilidadeOpen[x])
       }
     }
-  
-    return res.json({
-      nextAgendamento
+    let data = []
+    nextAgendamento.map((item) => {
+      let dia = item.date.getDate()
+      let mes = item.date.getMonth() + 1
+      let ano = item.date.getFullYear()
+
+      let dateH = new Date()
+      let diaH = dateH.getDate()
+      let mesH = dateH.getMonth() + 1
+      let anoH = dateH.getFullYear()
+
+      if(dia < 10){
+        dia = '0' + dia; 
+      }
+      if(mes < 10){
+        mes = '0' + mes; 
+      }
+      if(diaH < 10){
+        diaH = '0' + diaH; 
+      }
+      if(mesH < 10){
+        mesH = '0' + mesH; 
+      }
+
+      const date1 = `${dia}-${mes}-${ano}` 
+      const date2 = `${diaH}-${mesH}-${anoH}` 
+
+       if(date1 == date2){
+        data.push(item)
+       }
+       else{
+         console.log(`${date1}  ! ${date2}`)
+       }
     })
+    return res.json(
+      data
+    )
 
   }
 

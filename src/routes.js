@@ -37,9 +37,7 @@ routes.get('/pesquisarAgendamento', AgendamentoController.index);
 routes.put('/atualizarAgendamento/:id', AgendamentoController.update);
 routes.get('/pesquisarAgendamentos', AgendamentoController.show);
 routes.get('/agendamentosCancelados', AgendamentoController.findCandeled);
-
-
-
+routes.get('/agendamentosConcluidos', AgendamentoController.total);
 
 
 module.exports = routes;

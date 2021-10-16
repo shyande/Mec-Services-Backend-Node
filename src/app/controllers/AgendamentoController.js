@@ -5,9 +5,22 @@ const Veiculo = require('../models/Veiculo');
 const User = require('../models/User');
 const Disponibilidade = require('../models/Disponibilidade');
 const InfoAgendamento = require('../schemas/infoAgendamento');
-const {subHours,isBefore,format} = require('date-fns');
+const {subHours,isBefore,format,parseISO} = require('date-fns');
 
 class AgendamentoController{
+
+  async total(req,res){
+    const isEmpresa = await Empresa.findByPk(req.userId);
+
+    if(!isEmpresa){
+      return res.status(401).json({error:'Empresa inválida'});
+    }
+
+    const infoAgendamentoDados = await InfoAgendamento.find({status:'Concluído'});
+
+    return res.json(infoAgendamentoDados);
+
+  }
 
   async findCandeled(req,res){
     const isEmpresa = await Empresa.findByPk(req.userId);
@@ -20,8 +33,29 @@ class AgendamentoController{
       where:{status_agendamento:false}
     });
 
+    let agedamentosCancelados = []
+
+    agendamentos.map((item) => {
+     const {id,status_agendamento,user} = item
+     
+     let dia = item.canceled_at.getDate()
+     let mes = item.canceled_at.getMonth() + 1
+     let ano = item.canceled_at.getFullYear()
+    
+      if(dia < 10){
+        dia = '0' + dia; 
+      }
+      if(mes < 10){
+        mes = '0' + mes; 
+      }
+
+     const format = `${dia}-${mes}-${ano}` 
+     const data = {format,id,status_agendamento,user}
+     
+     agedamentosCancelados.push(data)
+    })
     return res.json(
-      agendamentos
+      agedamentosCancelados
     )
   }
 
@@ -33,9 +67,20 @@ class AgendamentoController{
       return res.status(401).json({error:'Empresa inválida'});
     }
 
-    const infoAgendamentoDados = await InfoAgendamento.find();
+    const infoAgendamentoDados = await InfoAgendamento.find().sort({_id:-1});
 
-    return res.json(infoAgendamentoDados);
+    const agendamentosAtivos = []
+    const agendamentosAntigos = []
+
+    infoAgendamentoDados.map(item => {
+      if(isBefore(item.dateCalc, new Date())){
+        agendamentosAntigos.push(item)
+      } else{
+        agendamentosAtivos.push(item)
+      }
+    });
+
+    return res.json(agendamentosAtivos);
   }
 
   async index(req,res){
