@@ -90,9 +90,19 @@ class AgendamentoController{
     });
 
     const infoAgendamentoDados = await InfoAgendamento.find({email:user.email});
+    
+    const agendamentosAtivos = []
+    const agendamentosAntigos = []
 
-
-    return res.json(infoAgendamentoDados)
+    infoAgendamentoDados.map(item => {
+      if(isBefore(item.dateCalc, new Date())){
+        agendamentosAntigos.push(item)
+      } else{
+        agendamentosAtivos.push(item)
+      }
+    });
+    
+    return res.json(agendamentosAtivos)
 
   }
   
