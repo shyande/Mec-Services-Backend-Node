@@ -2,13 +2,62 @@ const Yup = require('yup');
 const Agendamento = require('../models/Agendamento');
 const Empresa = require('../models/Empresa');
 const Veiculo = require('../models/Veiculo');
-const Servico = require('../models/Servico');
 const User = require('../models/User');
 const Disponibilidade = require('../models/Disponibilidade');
 const InfoAgendamento = require('../schemas/infoAgendamento');
-const {subHours,isBefore,format} = require('date-fns');
+const {subHours,isBefore,format,parseISO} = require('date-fns');
 
 class AgendamentoController{
+
+  async total(req,res){
+    const isEmpresa = await Empresa.findByPk(req.userId);
+
+    if(!isEmpresa){
+      return res.status(401).json({error:'Empresa inválida'});
+    }
+
+    const infoAgendamentoDados = await InfoAgendamento.find({status:'Concluído'});
+
+    return res.json(infoAgendamentoDados);
+
+  }
+
+  async findCandeled(req,res){
+    const isEmpresa = await Empresa.findByPk(req.userId);
+
+    if(!isEmpresa){
+      return res.status(401).json({error:'Empresa inválida'});
+    }
+
+    const agendamentos = await Agendamento.findAll({
+      where:{status_agendamento:false}
+    });
+
+    let agedamentosCancelados = []
+
+    agendamentos.map((item) => {
+     const {id,status_agendamento,user} = item
+     
+     let dia = item.canceled_at.getDate()
+     let mes = item.canceled_at.getMonth() + 1
+     let ano = item.canceled_at.getFullYear()
+    
+      if(dia < 10){
+        dia = '0' + dia; 
+      }
+      if(mes < 10){
+        mes = '0' + mes; 
+      }
+
+     const format = `${dia}-${mes}-${ano}` 
+     const data = {format,id,status_agendamento,user}
+     
+     agedamentosCancelados.push(data)
+    })
+    return res.json(
+      agedamentosCancelados
+    )
+  }
 
   async show(req,res){
 
@@ -18,9 +67,20 @@ class AgendamentoController{
       return res.status(401).json({error:'Empresa inválida'});
     }
 
-    const infoAgendamentoDados = await InfoAgendamento.find();
+    const infoAgendamentoDados = await InfoAgendamento.find().sort({_id:-1});
 
-    return res.json(infoAgendamentoDados);
+    const agendamentosAtivos = []
+    const agendamentosAntigos = []
+
+    infoAgendamentoDados.map(item => {
+      if(isBefore(item.dateCalc, new Date())){
+        agendamentosAntigos.push(item)
+      } else{
+        agendamentosAtivos.push(item)
+      }
+    });
+
+    return res.json(agendamentosAtivos);
   }
 
   async index(req,res){
@@ -30,9 +90,19 @@ class AgendamentoController{
     });
 
     const infoAgendamentoDados = await InfoAgendamento.find({email:user.email});
+    
+    const agendamentosAtivos = []
+    const agendamentosAntigos = []
 
-
-    return res.json(infoAgendamentoDados)
+    infoAgendamentoDados.map(item => {
+      if(isBefore(item.dateCalc, new Date())){
+        agendamentosAntigos.push(item)
+      } else{
+        agendamentosAtivos.push(item)
+      }
+    });
+    
+    return res.json(agendamentosAtivos)
 
   }
   
@@ -70,10 +140,6 @@ class AgendamentoController{
     const checkEmpresa = await Empresa.findOne({
       where:{id:empresa}
     });
-
-    const checkServico = await Servico.findOne({
-      where:{id:servico}
-    });
     
     if(!checkUser){
       return res.status(401).json({error:'identificação do usuario falhou'});
@@ -89,10 +155,6 @@ class AgendamentoController{
 
     if(!checkEmpresa){
       return res.status(401).json({error:'identificação da empresa falhou'});
-    }
-
-    if(!checkServico){
-      return res.status(401).json({error:'identificação do serviço falhou'});
     }
 
     /**Checando disponibilidade*/
@@ -127,13 +189,33 @@ class AgendamentoController{
       email:checkUser.email,
       veiculo: checkCar.placa,
       endereco:checkEmpresa.endereco,
-      servico:checkServico.tipo_servico,
+      servico,
+      telefone:checkUser.telefone,
       disponibilidade:dateHour,
       referenciaId: id,
-      dateCalc:checkDisponibilidade.date
+      dateCalc:checkDisponibilidade.date,
+      status:'Recebido'
     });
 
     return res.json(infoAgendamentoDados);
+
+  }
+
+  async update(req,res){
+
+    const infoAgendamentoDados = await InfoAgendamento.findOne({referenciaId:req.params.id});
+
+    if(!infoAgendamentoDados){
+      return res.status(401).json({error:'Agendamento não existe'});
+    }
+
+    const {status} = req.body;
+
+    infoAgendamentoDados.status = status;
+
+    infoAgendamentoDados.save()
+
+    return res.status(200).json({status:'Atualizado'})
 
   }
 
