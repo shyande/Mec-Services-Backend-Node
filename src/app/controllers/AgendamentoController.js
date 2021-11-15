@@ -165,6 +165,7 @@ class AgendamentoController{
     if(checkAgendamento){
       return res.status(401).json({error:'Disponibilidade já utilizada'});
     }
+    console.log(checkUser.name)
 
     const dateHour =  format(checkDisponibilidade.date, "dd-MM-yyyy' às 'HH:00")
 
@@ -190,6 +191,7 @@ class AgendamentoController{
       veiculo: checkCar.placa,
       endereco:checkEmpresa.endereco,
       servico,
+      nome:checkUser.name,
       telefone:checkUser.telefone,
       disponibilidade:dateHour,
       referenciaId: id,

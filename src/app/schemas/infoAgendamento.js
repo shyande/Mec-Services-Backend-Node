@@ -20,6 +20,10 @@ const InfoAgendamentoSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  nome:{
+    type: String,
+    required: true,
+  },
   disponibilidade: {
     type: String,
     required: true,
